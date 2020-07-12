@@ -47,18 +47,20 @@ class PaintWeightFromSelectedBonesOnly(bpy.types.Operator):
 
         # save deform bones names
         deform_bone_names = set(map(lambda x: x.name, filter(lambda x: x.use_deform, rig.bones)))
-        # only currently selected bones should be set as deform bones
-        selected_bone_names = set(map(lambda x: x.name, context.selected_pose_bones))
-        for bone in rig.bones:
-            bone.use_deform = bone.use_deform and bone.name in selected_bone_names
-        # delete currently selected vertices from groups
-        # so they are not being influenced by other bones
-        bpy.ops.object.vertex_group_remove_from(use_all_groups=True)
-        # use automatic weight painting
-        bpy.ops.paint.weight_from_bones()
-        # restore deform state
-        for bone in rig.bones:
-            bone.use_deform = bone.name in deform_bone_names
+        try:
+            # only currently selected bones should be set as deform bones
+            selected_bone_names = set(map(lambda x: x.name, context.selected_pose_bones))
+            for bone in rig.bones:
+                bone.use_deform = bone.use_deform and bone.name in selected_bone_names
+            # delete currently selected vertices from groups
+            # so they are not being influenced by other bones
+            bpy.ops.object.vertex_group_remove_from(use_all_groups=True)
+            # use automatic weight painting
+            bpy.ops.paint.weight_from_bones()
+        finally:
+            # restore deform state
+            for bone in rig.bones:
+                bone.use_deform = bone.name in deform_bone_names
         return {"FINISHED"}
 
 
