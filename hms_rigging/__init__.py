@@ -1,19 +1,42 @@
-# see https://blender.stackexchange.com/questions/28504/blender-ignores-changes-to-python-scripts/28505#28505
-# if "bpy" in locals():
-#     pass
+###
+# Hawkmoth Studio Blender Tools
+# Copyright (C) 2020 Hawkmoth Studio
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+###
+
 
 import bpy
 
-
-# Blender Addon Info #
 bl_info = {
-    "name": "Hawkmoth Studio Rigging Tools",
-    "blender": (2, 80, 0),
-    "category": "Animation",
+    'name': 'Hawkmoth Studio: Rigging',
+    'author': 'Vitaly Ogoltsov',
+    'wiki_url': 'https://github.com/hawkmoth-studio/blender-tools/wiki',
+    'tracker_url': 'https://github.com/hawkmoth-studio/blender-tools/issues',
+    'version': (0, 0, 1),
+    'blender': (2, 80, 0),
+    'location': 'View 3D > Tool Shelf > Hawkmoth Studio',
+    'category': 'Game Development'
 }
 
 
-class PaintWeightFromSelectedBonesOnly(bpy.types.Operator):
+class HMS_RIGGING_prefs(bpy.types.PropertyGroup):
+    """Rigging tools preferences."""
+    pass
+
+
+class HMS_RIGGING_OT_weight_from_selected_bones_only(bpy.types.Operator):
     """This operator assigns automatic weights assuming only selected bones deform currently selected vertex/object.
 
     Standard 'automatic weights from bones' operator re-calculates weights for selected bones,
@@ -24,7 +47,7 @@ class PaintWeightFromSelectedBonesOnly(bpy.types.Operator):
     What this operator does is: mark all bones except for selected as non-deform bones (use_deform = False),
     use automatic weights for weight assignment and then restores bone use_deform property.
     """
-    bl_idname = "paint.weight_from_selected_bones_only"
+    bl_idname = "hms_rigging.weight_from_selected_bones_only"
     bl_label = "Weight Paint Selected Bones Only"
     bl_options = {"REGISTER", "UNDO"}
 
@@ -64,9 +87,9 @@ class PaintWeightFromSelectedBonesOnly(bpy.types.Operator):
         return {"FINISHED"}
 
 
-class ObjectVertexGroupLockSelectedBones(bpy.types.Operator):
+class HMS_RIGGING_OT_vertex_group_lock_selected_bones(bpy.types.Operator):
     """Locks vertex groups that correspond to selected bones."""
-    bl_idname = "object.vertex_group_lock_selected_bones"
+    bl_idname = "hms_rigging.vertex_group_lock_selected_bones"
     bl_label = "Lock Groups"
     bl_options = {"REGISTER", "UNDO"}
 
@@ -86,9 +109,9 @@ class ObjectVertexGroupLockSelectedBones(bpy.types.Operator):
         return {"FINISHED"}
 
 
-class ObjectVertexGroupUnlockSelectedBones(bpy.types.Operator):
+class HMS_RIGGING_OT_vertex_group_unlock_selected_bones(bpy.types.Operator):
     """Unlocks vertex groups that correspond to selected bones."""
-    bl_idname = "object.vertex_group_unlock_selected_bones"
+    bl_idname = "hms_rigging.vertex_group_unlock_selected_bones"
     bl_label = "Unlock Groups"
     bl_options = {"REGISTER", "UNDO"}
 
@@ -108,26 +131,41 @@ class ObjectVertexGroupUnlockSelectedBones(bpy.types.Operator):
         return {"FINISHED"}
 
 
-class WeightPaintingPanel(bpy.types.Panel):
-    bl_idname = "ANIMATION_PT_hawkmoth_weight_painting"
+class HMS_RIGGING_PT_main(bpy.types.Panel):
+    bl_idname = "HMS_RIGGING_PT_main"
+    bl_category = "HMS: Rigging"
     bl_label = "Weight Painting"
-    bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_category = "Hawkmoth Rigging"
+    bl_space_type = "VIEW_3D"
 
     def draw(self, context: bpy.types.Context):
+        prefs: HMS_RIGGING_prefs = context.scene.hms_rigging
+
         row = self.layout.row()
-        row.operator("paint.weight_from_selected_bones_only")
+        row.operator(HMS_RIGGING_OT_weight_from_selected_bones_only.bl_idname)
+
         row = self.layout.row()
         row.scale_x = 0.5
-        row.operator("object.vertex_group_lock_selected_bones")
-        row.operator("object.vertex_group_unlock_selected_bones")
+        row.operator(HMS_RIGGING_OT_vertex_group_lock_selected_bones.bl_idname)
+        row.operator(HMS_RIGGING_OT_vertex_group_unlock_selected_bones.bl_idname)
 
 
 classes = (
-    PaintWeightFromSelectedBonesOnly,
-    ObjectVertexGroupLockSelectedBones,
-    ObjectVertexGroupUnlockSelectedBones,
-    WeightPaintingPanel,
+    HMS_RIGGING_prefs,
+    HMS_RIGGING_OT_weight_from_selected_bones_only,
+    HMS_RIGGING_OT_vertex_group_lock_selected_bones,
+    HMS_RIGGING_OT_vertex_group_unlock_selected_bones,
+    HMS_RIGGING_PT_main,
 )
-register, unregister = bpy.utils.register_classes_factory(classes)
+register_classes, unregister_classes = bpy.utils.register_classes_factory(classes)
+
+
+def register():
+    # Register all classes.
+    register_classes()
+    # Create addon-level properties object.
+    bpy.types.Scene.hms_rigging = bpy.props.PointerProperty(type=HMS_RIGGING_prefs)
+
+
+def unregister():
+    unregister_classes()
