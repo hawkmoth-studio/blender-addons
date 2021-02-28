@@ -4,7 +4,9 @@ set BLENDER_VERSION=2.83
 set BLENDER_ADDONS_DIR=%APPDATA%\Blender^ Foundation\Blender\%BLENDER_VERSION%\scripts\addons
 
 
-CALL :addon_install hawkmoth_rigging_tools
+CALL :addon_install hms_compositing
+CALL :addon_install hms_rendering
+CALL :addon_install hms_rigging
 goto :eof
 
 
