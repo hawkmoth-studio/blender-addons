@@ -77,7 +77,7 @@ class HMS_RENDERING_OT_batch_render_selected(bpy.types.Operator):
 
         prefs: HMS_RENDERING_prefs = context.scene.hms_rendering
 
-        zf = zipfile.ZipFile(f"{prefs.render_output}\\{render_object.name}.zip", "w")
+        zf = zipfile.ZipFile(f"{prefs.render_output}\\{render_object.name}.zip", "w", compression=zipfile.ZIP_LZMA)
         for dirname, subdirectories, filenames in os.walk(prefs.render_output):
             for filename in filenames:
                 if not filename.endswith('.zip'):
