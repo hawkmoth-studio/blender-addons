@@ -81,6 +81,12 @@ class HMS_RENDERING_OT_batch_render_selected(bpy.types.Operator):
         for dirname, subdirectories, filenames in os.walk(prefs.render_output):
             for filename in filenames:
                 if not filename.endswith('.zip'):
+                    # remove blender frame number
+                    filename_old: str = filename
+                    name, ext = os.path.splitext(filename_old)
+                    filename = name[:-4] + ext
+                    os.rename(os.path.join(dirname, filename_old), os.path.join(dirname, filename))
+
                     filepath = os.path.join(dirname, filename)
                     zf.write(filepath, filename)
                     os.remove(filepath)
